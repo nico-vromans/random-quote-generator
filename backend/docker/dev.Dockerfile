@@ -91,6 +91,10 @@ WORKDIR ${APP_DIR}
 RUN mkdir -p ${DJANGO_LOG_DIR} \
     && chown -R ${APP_USER}:${APP_USER} ${DJANGO_LOG_DIR}
 
+RUN mkdir -p ${ROOT_DIR}/static ${ROOT_DIR}/media \
+    && chown -R ${APP_USER}:${APP_USER} ${ROOT_DIR}/static \
+    && chown -R ${APP_USER}:${APP_USER} ${ROOT_DIR}/media
+
 USER ${APP_USER}
 
 SHELL ["/bin/bash", "-c"]

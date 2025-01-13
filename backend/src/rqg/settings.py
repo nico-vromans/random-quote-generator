@@ -37,21 +37,35 @@ class Default(Configuration):
     # Application definition
 
     @property
-    def INSTALLED_APPS(self) -> list[str]:
+    def INSTALLED_APPS(self) -> list[str]:  # noqa
         return [
+            # Django Unfold admin
+            'unfold',  # before django.contrib.admin
+            'unfold.contrib.filters',  # optional, if special filters are needed
+            'unfold.contrib.forms',  # optional, if special form elements are needed
+            'unfold.contrib.inlines',  # optional, if special inlines are needed
+            'unfold.contrib.import_export',  # optional, if django-import-export package is used
+            'unfold.contrib.guardian',  # optional, if django-guardian package is used
+            'unfold.contrib.simple_history',  # optional, if django-simple-history package is used
             # Django default
-            'django.contrib.admin',
+            'django.contrib.admin',  # required
             'django.contrib.auth',
             'django.contrib.contenttypes',
             'django.contrib.sessions',
             'django.contrib.messages',
             'django.contrib.staticfiles',
             # Third-party apps
+            'django_extensions',
+            'drf_spectacular',
+            'drf_spectacular_sidecar',
             'rest_framework',
+            # Custom apps
+            'contrib',
+            'quotes',
         ]
 
     @property
-    def MIDDLEWARE(self) -> list[str]:
+    def MIDDLEWARE(self) -> list[str]:  # noqa
         return [
             'django.middleware.security.SecurityMiddleware',
             'django.contrib.sessions.middleware.SessionMiddleware',
@@ -89,7 +103,7 @@ class Default(Configuration):
     # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
     @property
-    def DATABASES(self) -> dict[str, dict[str, str | Path]]:
+    def DATABASES(self) -> dict[str, dict[str, str | Path]]:  # noqa
         return {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
@@ -127,7 +141,7 @@ class Default(Configuration):
 
     LANGUAGE_CODE = values.Value(default='en-us', environ=False)
 
-    TIME_ZONE = values.Value(default='UTC', environ=False)
+    TIME_ZONE = values.Value(default='Europe/Brussels', environ=False)
 
     USE_I18N = values.BooleanValue(True, environ=False)
 
@@ -136,9 +150,92 @@ class Default(Configuration):
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-    STATIC_URL = values.Value(default='static/', environ_prefix=ENV_PREFIX)
+    @property
+    def STATIC_ROOT(self) -> Path:  # noqa
+        return BASE_DIR / '../static'
+
+    @property
+    def MEDIA_ROOT(self) -> Path:  # noqa
+        return BASE_DIR / '../media'
+
+    STATIC_URL = values.Value(default='/static/', environ_prefix=ENV_PREFIX)
+    MEDIA_URL = values.Value(default='/media/', environ_prefix=ENV_PREFIX)
 
     # Default primary key field type
     # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
     DEFAULT_AUTO_FIELD = values.Value(default='django.db.models.BigAutoField', environ=False)
+
+    LOGGING = values.DictValue(
+        {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': {
+                'verbose': {
+                    'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                    'style': '{',
+                },
+                'simple': {
+                    'format': '{levelname} {message}',
+                    'style': '{',
+                },
+            },
+            'handlers': {
+                'console': {
+                    'level': 'INFO',
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'simple',
+                },
+                'file': {
+                    'level': 'ERROR',
+                    'class': 'logging.FileHandler',
+                    'filename': 'errors.log',
+                    'formatter': 'verbose',
+                },
+            },
+            'loggers': {
+                'django': {
+                    'handlers': ['console', 'file'],
+                    'level': 'DEBUG',
+                    'propagate': True,
+                },
+                'contrib': {  # Contrib app
+                    'handlers': ['console', 'file'],
+                    'level': 'DEBUG',
+                    'propagate': True,
+                },
+                'quotes': {  # Quotes app
+                    'handlers': ['console', 'file'],
+                    'level': 'DEBUG',
+                    'propagate': True,
+                },
+            },
+        }
+    )
+
+    # Django REST Framework (@see https://www.django-rest-framework.org/tutorial/quickstart/)
+    @property
+    def REST_FRAMEWORK(self) -> dict[str, any]:  # noqa
+        return {
+            'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+            'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+            'PAGE_SIZE': 10
+        }
+
+    @property
+    def SPECTACULAR_SETTINGS(self) -> dict[str, any]:  # noqa
+        return {
+            'TITLE': 'Random quote generator API',
+            'DESCRIPTION': 'API to get quotes',
+            'VERSION': '1.0.0',
+            'SERVE_INCLUDE_SCHEMA': False,
+            'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+            'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+            'REDOC_DIST': 'SIDECAR',
+        }
+
+    # Unsplash API
+    UNSPLASH_API_CLIENT_ID = os.getenv(key='UNSPLASH_API_CLIENT_ID')
+
+    # API Ninjas
+    APININJAS_API_KEY = os.getenv(key='APININJAS_API_KEY')
