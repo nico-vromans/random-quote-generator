@@ -37,6 +37,7 @@ class Quote(GUIDModelMixin, TimestampMixin, models.Model):
     quote_hash = models.CharField(max_length=64, unique=True, editable=False)
     image_url = models.URLField(null=True)
     image_alt_text = models.CharField(max_length=255, null=True)
+    # TODO: move origin to own model with FK
     origin = models.URLField(null=True)
     likes = models.PositiveBigIntegerField(default=0)
     dislikes = models.PositiveBigIntegerField(default=0)
