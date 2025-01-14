@@ -55,6 +55,7 @@ class Default(Configuration):
             'django.contrib.messages',
             'django.contrib.staticfiles',
             # Third-party apps
+            'corsheaders',
             'django_extensions',
             'drf_spectacular',
             'drf_spectacular_sidecar',
@@ -67,6 +68,7 @@ class Default(Configuration):
     @property
     def MIDDLEWARE(self) -> list[str]:  # noqa
         return [
+            'corsheaders.middleware.CorsMiddleware',
             'django.middleware.security.SecurityMiddleware',
             'django.contrib.sessions.middleware.SessionMiddleware',
             'django.middleware.common.CommonMiddleware',
@@ -76,6 +78,13 @@ class Default(Configuration):
             'django.middleware.clickjacking.XFrameOptionsMiddleware',
         ]
 
+    CORS_ALLOWED_ORIGINS = values.ListValue(
+        [
+            'http://localhost:3000',
+            'http://0.0.0.0:3000',
+        ],
+        environ=False,
+    )
     ROOT_URLCONF = values.Value(default='rqg.urls', environ=False)
 
     TEMPLATES = values.ListValue(
