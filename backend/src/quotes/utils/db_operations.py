@@ -4,7 +4,7 @@ from pydantic import HttpUrl
 
 from contrib.api.clients import UnsplashImageAPIClient
 from ..api.models import Quote as QuoteData
-from ..models import Quote, Author, Category
+from ..models import Quote, Author, Category, QuoteOrigin
 
 logger = logging.getLogger('quotes')
 
@@ -27,6 +27,8 @@ def get_or_create_quote(quote: QuoteData | None) -> Quote | None:
         author, _ = Author.objects.get_or_create(name=author)
         category: Category
         category, _ = Category.objects.get_or_create(name=category)
+        quote_origin: QuoteOrigin
+        quote_origin, _ = QuoteOrigin.objects.get_or_create(url=origin)
         image_url: HttpUrl
         image_alt_text: str
         image_url, image_alt_text = UnsplashImageAPIClient().get_random_image_with_parameters(
@@ -37,9 +39,9 @@ def get_or_create_quote(quote: QuoteData | None) -> Quote | None:
             category=category,
             image_url=image_url,
             image_alt_text=image_alt_text,
-            origin=origin,
+            origin=quote_origin,
             quote_text=quote_text,
-            defaults={'author': author, 'category': category, 'origin': origin},
+            defaults={'author': author, 'category': category, 'origin': quote_origin},
         )
 
         return quote

@@ -31,6 +31,7 @@ def fetch_random_quote_from_database() -> Quote | None:
 def fetch_random_quote() -> Quote | None:
     """Fetches a random quote from a random source."""
     quote_source: QuoteSource = get_random_quote_source()
+    quote_source = QuoteSource.zen_quote_api_client
 
     if quote_source == QuoteSource.DATABASE:
         return fetch_random_quote_from_database()

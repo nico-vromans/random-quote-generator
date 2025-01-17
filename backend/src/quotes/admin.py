@@ -7,7 +7,7 @@ from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 
 from contrib.admin_mixins import GUIDAdminMixin
-from quotes.models import Author, Category, Quote
+from quotes.models import Author, Category, Quote, QuoteOrigin
 
 
 @admin.register(Author)
@@ -42,9 +42,25 @@ class CategoryAdmin(GUIDAdminMixin, ModelAdmin):
     )
 
 
+@admin.register(QuoteOrigin)
+class QuoteOriginAdmin(GUIDAdminMixin, ModelAdmin):
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
+    list_display = ('url',)
+    list_filter = ('url', ('created', RangeDateFilter), ('modified', RangeDateFilter))
+    readonly_fields = ('created', 'modified')
+    search_fields = ordering = ('url',)
+    fieldsets = (
+        (
+            _('Quote origin'), {'fields': ('url',)}
+        ),
+    )
+
+
 @admin.register(Quote)
 class QuoteAdmin(GUIDAdminMixin, ModelAdmin):
-    autocomplete_fields = ('author', 'category')
+    autocomplete_fields = ('author', 'category', 'origin')
     list_display = ('author', 'quote_text_short', 'ratio', 'created', 'modified')
     list_filter = ('author', ('created', RangeDateFilter), ('modified', RangeDateFilter))
     readonly_fields = ('created', 'modified', 'quote_hash')
@@ -56,7 +72,7 @@ class QuoteAdmin(GUIDAdminMixin, ModelAdmin):
         (
             _('Metadata'),
             {'classes': ('tab',),
-             'fields': ('quote_hash', ('image_url', 'image_alt_text', 'origin'), ('likes', 'dislikes'))}
+             'fields': ('quote_hash', ('image_url', 'image_alt_text'), 'origin', ('likes', 'dislikes'))}
         ),
     )
 

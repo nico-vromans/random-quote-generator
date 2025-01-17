@@ -30,6 +30,18 @@ class Category(GUIDModelMixin, TimestampMixin, models.Model):
         return self.name
 
 
+class QuoteOrigin(GUIDModelMixin, TimestampMixin, models.Model):
+    url = models.URLField(null=True)
+
+    class Meta:
+        verbose_name = _('Origin')
+        verbose_name_plural = _('Origins')
+        ordering = ('url',)
+
+    def __str__(self) -> str:
+        return self.url
+
+
 class Quote(GUIDModelMixin, TimestampMixin, models.Model):
     author = models.ForeignKey(to=Author, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.ForeignKey(to=Category, on_delete=models.SET_NULL, null=True, blank=True)
@@ -37,8 +49,7 @@ class Quote(GUIDModelMixin, TimestampMixin, models.Model):
     quote_hash = models.CharField(max_length=64, unique=True, editable=False)
     image_url = models.URLField(null=True)
     image_alt_text = models.CharField(max_length=255, null=True)
-    # TODO: move origin to own model with FK
-    origin = models.URLField(null=True)
+    origin = models.ForeignKey(to=QuoteOrigin, on_delete=models.SET_NULL, null=True, blank=True)
     likes = models.PositiveBigIntegerField(default=0)
     dislikes = models.PositiveBigIntegerField(default=0)
 

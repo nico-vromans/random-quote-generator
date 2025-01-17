@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from quotes.models import Author, Category, Quote
+from quotes.models import Author, Category, Quote, QuoteOrigin
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -15,9 +15,16 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('name',)
 
 
+class QuoteOriginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuoteOrigin
+        fields = ('url',)
+
+
 class QuoteSerializer(serializers.ModelSerializer):
     author = AuthorSerializer()
     category = CategorySerializer()
+    origin = QuoteOriginSerializer()
 
     class Meta:
         model = Quote

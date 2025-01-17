@@ -1,21 +1,92 @@
 "use client";
 
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge"
-
-import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-
-import { BackgroundGradient } from "@/components/ui/background-gradient";
-
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge"
+import { FaThumbsUp, FaRegThumbsUp, FaThumbsDown, FaRegThumbsDown } from "react-icons/fa6";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function Home() {
+  const baseQuotesUrl = 'http://0.0.0.0:8000/quotes/';
+
+  function getPreviousVote(guid: string) {
+    const interaction = localStorage.getItem(guid);
+
+    if (interaction !== null) {
+      return interaction;
+    }
+
+    return null;
+  }
+
   const [quoteData, setQuoteData] = useState(null); // State to hold quote data
   const [loading, setLoading] = useState(true); // Loading state
+
+  const likeQuote = async () => {
+    let response;
+    let queryParams;
+    const previousVote = getPreviousVote(guid);
+
+
+    if (!previousVote) {
+      localStorage.setItem(guid, 'like');
+      queryParams = new URLSearchParams({ direction: 'increase' })
+      response = await fetch(baseQuotesUrl + guid + "/like/?" + queryParams.toString(), { method: "PATCH" });
+    } else {
+      if (previousVote === 'like') {
+        localStorage.removeItem(guid);
+        queryParams = new URLSearchParams({ direction: 'decrease' })
+        response = await fetch(baseQuotesUrl + guid + "/like/?" + queryParams.toString(), { method: "PATCH" });
+      } else {
+        localStorage.setItem(guid, 'like');
+        queryParams = new URLSearchParams({ direction: 'increase', reverse_opposite: 'true' })
+        response = await fetch(baseQuotesUrl + guid + "/like/?" + queryParams.toString(), { method: "PATCH" });
+      }
+    }
+
+    const data = await response.json();
+    const imageResponse = await Promise.resolve(
+      fetch(data.image_url, { method: 'head' }).catch(() => null)
+    );
+
+    data.is_image_accessible = imageResponse?.ok || false;
+    setQuoteData(data); // Save the data to state
+  }
+
+  const dislikeQuote = async () => {
+    let response;
+    let queryParams;
+    const previousVote = getPreviousVote(guid);
+
+    if (!previousVote) {
+      localStorage.setItem(guid, 'dislike');
+      queryParams = new URLSearchParams({ direction: 'increase' })
+      response = await fetch("http://0.0.0.0:8000/quotes/" + guid + "/dislike/?" + queryParams.toString(), { method: "PATCH" });
+    } else {
+      if (previousVote === 'dislike') {
+        localStorage.removeItem(guid);
+        queryParams = new URLSearchParams({ direction: 'decrease' })
+        response = await fetch("http://0.0.0.0:8000/quotes/" + guid + "/dislike/?" + queryParams.toString(), { method: "PATCH" });
+      } else {
+        localStorage.setItem(guid, 'dislike');
+        queryParams = new URLSearchParams({ direction: 'increase', reverse_opposite: 'true' })
+        response = await fetch("http://0.0.0.0:8000/quotes/" + guid + "/dislike/?" + queryParams.toString(), { method: "PATCH" });
+      }
+    }
+
+    const data = await response.json();
+    const imageResponse = await Promise.resolve(
+      fetch(data.image_url, { method: 'head' }).catch(() => null)
+    );
+
+    data.is_image_accessible = imageResponse?.ok || false;
+    setQuoteData(data); // Save the data to state
+  }
 
   useEffect(() => {
     // Fetching data from the Quote API
@@ -24,7 +95,11 @@ export default function Home() {
         // TODO: continue with this functionality
         const response = await fetch("http://0.0.0.0:8000/quotes/get_random_quote/");
         const data = await response.json();
-        console.log('data', data);
+        const imageResponse = await Promise.resolve(
+          fetch(data.image_url, { method: 'head' }).catch(() => null)
+        );
+
+        data.is_image_accessible = imageResponse?.ok || false;
         setQuoteData(data); // Save the data to state
       } catch (error) {
         console.error("Error fetching quote data:", error);
@@ -36,185 +111,187 @@ export default function Home() {
     fetchQuotes();
   }, []);
 
-  // if (loading) return <p>Loading...</p>;
-  //
-  // if (!quoteData) return <p>No quote data.</p>;
+  if (loading) return <p>Loading...</p>;
 
-  // const { quote, author, category, image, likeCount, dislikeCount } = quoteData;
+  if (!quoteData) return <p>No quote data.</p>;
+
+  const {
+    guid,
+    author,
+    quote_text,
+    category,
+    likes,
+    dislikes,
+    image_url,
+    image_alt_text,
+    is_image_accessible
+  } = quoteData;
 
   return (
     <AuroraBackground>
-      <div className="z-50">
+      <div className="absolute top-10 right-10 z-50">
         <ModeToggle />
       </div>
-      <motion.div
-        initial={{ opacity: 0.0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{
-          delay: 0.3,
-          duration: 0.8,
-          ease: "easeInOut",
-        }}
-        className="relative flex flex-col gap-4 items-center justify-center px-4"
-      >
+      <div>
+        <BackgroundGradient className="rounded-lg w-150 p-3 sm:p-10 bg-white dark:bg-zinc-900">
+          <div
+            className={cn(
+              "overflow-hidden relative card h-80 w-150 rounded-lg backgroundImage p-4",
+              { "shadow-xl": is_image_accessible }
+            )}
+            style={is_image_accessible ? {
+              backgroundImage: `url(${image_url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            } : {}}
+          >
+            {is_image_accessible && (
+              <div className="backdrop-blur-sm absolute inset-0 bg-black bg-opacity-50 pointer-events-none"></div>
+            )}
+            <div className="flex flex-col justify-center">
+              <p className={cn(
+                "text-base sm:text-xl mt-4 mb-2 font-bold z-10",
+                {
+                  "text-neutral-50 dark:text-neutral-50": is_image_accessible,
+                  "text-neutral-600 dark:text-neutral-50": !is_image_accessible,
+                }
+              )}>
+                &quot;{quote_text}&quot;
+              </p>
+              <p className={cn(
+                "text-sm italic z-10",
+                {
+                  "text-neutral-300 dark:text-neutral-300": is_image_accessible,
+                  "text-neutral-400 dark:text-neutral-500": !is_image_accessible,
+                }
+              )}>
+                {author['name']}
+              </p>
+            </div>
+          </div>
 
-        <CardContainer className="inter-var">
-          <BackgroundGradient className="rounded-xl bg-white dark:bg-zinc-900">
-            <CardBody
-              className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border  ">
-              <CardItem translateZ="50" className="w-full">
-                <div className="w-full group/card">
-                  <div
+          <div className="flex justify-between mt-12">
+            <button onClick={likeQuote}
                     className={cn(
-                      " cursor-pointer overflow-hidden relative card h-96 rounded-xl shadow-xl backgroundImage flex flex-col justify-between p-4",
-                      "bg-[url(https://images.unsplash.com/photo-1544077960-604201fe74bc?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1651&q=80)] bg-cover"
-                    )}
-                  >
-                    <div
-                      className="absolute w-full h-full top-0 left-0 transition duration-300 group-hover/card:bg-black opacity-60"></div>
-                    <CardItem>
-                      <div className="flex flex-col justify-center">
-                        <h2 className="font-bold text-xl md:text-2xl text-gray-50 relative z-10">
-                          &quot;Some life inspiring quote.&quot;
-                        </h2>
-                        <p className="font-normal text-sm text-gray-50 relative z-10 my-4">
-                          The Author
-                        </p>
-                      </div>
-                    </CardItem>
-                  </div>
-                </div>
-                {/*<Image*/}
-                {/*  src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"*/}
-                {/*  height="1000"*/}
-                {/*  width="1000"*/}
-                {/*  className="h-60 w-full object-cover rounded-xl group-hover/card:shadow-xl"*/}
-                {/*  alt="thumbnail"*/}
-                {/*/>*/}
-              </CardItem>
-              <div className="flex justify-between items-center mt-20">
-                <CardItem
-                  translateZ={20}
-                  as={Link}
-                  href="https://twitter.com/mannupaaji"
-                  target="__blank"
-                  className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
-                >
-                  LIKE
-                </CardItem>
-                <CardItem
-                  translateZ={20}
-                >
-                  <Badge>Category</Badge>
-                </CardItem>
-                <CardItem
-                  translateZ={20}
-                  as="button"
-                  className="px-4 py-2 rounded-xl bg-black dark:bg-white dark:text-black text-white text-xs font-bold"
-                >
-                  DISLIKE
-                </CardItem>
-              </div>
-            </CardBody>
-          </BackgroundGradient>
-        </CardContainer>
+                      "px-6 py-2 bg-transparent border-2 dark:text-white text-black rounded-lg font-bold " +
+                      "transform hover:-translate-y-1 transition duration-400",
+                      { "border-green-700 dark:border-green-700": getPreviousVote(guid) === 'like' },
+                      { "border-black dark:border-white": getPreviousVote(guid) !== 'like' },
+                    )}>
 
-      </motion.div>
+              {getPreviousVote(guid) === 'like' ? <FaThumbsUp className="text-green-700" /> : <FaRegThumbsUp />}
+              <span>{likes}</span>
+            </button>
+            <div className="align-middle content-center">
+              <Badge>{category['name']}</Badge>
+            </div>
+            <button onClick={dislikeQuote}
+                    className={cn(
+                      "px-6 py-2 bg-transparent border-2 dark:text-white text-black rounded-lg font-bold " +
+                      "transform hover:-translate-y-1 transition duration-400",
+                      { "border-red-700 dark:border-red-700": getPreviousVote(guid) === 'dislike' },
+                      { "border-black dark:border-white": getPreviousVote(guid) !== 'dislike' },
+                    )}>
+              {getPreviousVote(guid) === 'dislike' ? <FaThumbsDown className="text-red-700" /> : <FaRegThumbsDown />}
+              <span>{dislikes}</span>
+            </button>
+            {/*<HoverBorderGradient*/}
+            {/*  containerClassName="rounded-full"*/}
+            {/*  as="button"*/}
+            {/*  className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-1"*/}
+            {/*>*/}
+            {/*  <FaRegThumbsUp onClick={likeQuote} />*/}
+            {/*  <span>{likes}</span>*/}
+            {/*</HoverBorderGradient>*/}
+            {/*<HoverBorderGradient*/}
+            {/*  containerClassName="rounded-full"*/}
+            {/*  as="button"*/}
+            {/*  className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-1"*/}
+            {/*>*/}
+            {/*  <FaRegThumbsDown onClick={dislikeQuote} />*/}
+            {/*  <span>{dislikes}</span>*/}
+            {/*</HoverBorderGradient>*/}
+          </div>
+        </BackgroundGradient>
+      </div>
+      {/*<CardContainer className="inter-var">*/}
+      {/*  /!*<BackgroundGradient className="rounded-xl bg-white dark:bg-zinc-900">*!/*/}
+      {/*  <CardBody*/}
+      {/*    className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border">*/}
+      {/*    <CardItem translateZ="50" className="w-full">*/}
+      {/*      <div className="w-full group/card">*/}
+      {/*        <div*/}
+      {/*          className={cn(*/}
+      {/*            " cursor-pointer overflow-hidden relative card h-96 rounded-xl shadow-xl backgroundImage flex flex-col justify-between p-4"*/}
+      {/*          )}*/}
+      {/*          style={is_image_accessible ? {*/}
+      {/*            backgroundImage: `url(${image_url})`,*/}
+      {/*            backgroundSize: "cover",*/}
+      {/*            backgroundPosition: "center"*/}
+      {/*          } : {}}*/}
+      {/*        >*/}
+      {/*          <div*/}
+      {/*            className="absolute w-full h-full top-0 left-0 transition duration-300  opacity-60"></div>*/}
+      {/*          <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>*/}
+      {/*          <CardItem translateZ={100}>*/}
+      {/*            <div className="flex flex-col justify-center">*/}
+      {/*              <CardItem translateZ={90}>*/}
+      {/*              <h2 className="font-bold text-xl md:text-2xl text-gray-50 relative z-10">*/}
+      {/*                &quot;{quote_text}&quot;*/}
+      {/*              </h2>*/}
+      {/*                </CardItem>*/}
+      {/*              <p className="font-normal text-sm text-gray-50 relative z-10 my-4">*/}
+      {/*                {author['name']}*/}
+      {/*              </p>*/}
+      {/*            </div>*/}
+      {/*          </CardItem>*/}
+      {/*        </div>*/}
+      {/*      </div>*/}
+      {/*    </CardItem>*/}
+      {/*    <div className="flex justify-between items-center mt-20">*/}
+      {/*      <CardItem*/}
+      {/*        translateZ={50}*/}
+      {/*        as="button"*/}
+      {/*        // as={Link}*/}
+      {/*        // href="https://twitter.com/mannupaaji"*/}
+      {/*        // target="__blank"*/}
+      {/*        // className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"*/}
+      {/*        className="px-4 py-2 rounded-xl bg-black dark:bg-white dark:text-black text-white text-xs font-bold"*/}
+      {/*        onClick={likeQuote}*/}
+      {/*      >*/}
+
+      {/*        <FaRegThumbsUp onClick={likeQuote} /> {likes}*/}
+      {/*      </CardItem>*/}
+      {/*      <CardItem*/}
+      {/*        translateZ={50}*/}
+      {/*      >*/}
+      {/*        /!*<div className="m-40 flex justify-center text-center">*!/*/}
+      {/*        <HoverBorderGradient*/}
+      {/*          containerClassName="rounded-full"*/}
+      {/*          as="button"*/}
+      {/*          className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2"*/}
+      {/*        >*/}
+      {/*          <span>Aceternity UI</span>*/}
+      {/*        </HoverBorderGradient>*/}
+      {/*        /!*</div>*!/*/}
+      {/*      </CardItem>*/}
+      {/*      <CardItem*/}
+      {/*        translateZ={50}*/}
+      {/*      >*/}
+      {/*        <Badge>{category['name']}</Badge>*/}
+      {/*      </CardItem>*/}
+      {/*      <CardItem*/}
+      {/*        translateZ={50}*/}
+      {/*        as="button"*/}
+      {/*        className="px-4 py-2 rounded-xl bg-black dark:bg-white dark:text-black text-white text-xs font-bold"*/}
+      {/*        onClick={dislikeQuote}*/}
+      {/*      >*/}
+      {/*        <FaRegThumbsDown /> {dislikes}*/}
+      {/*      </CardItem>*/}
+      {/*    </div>*/}
+      {/*  </CardBody>*/}
+      {/*  /!*</BackgroundGradient>*!/*/}
+      {/*</CardContainer>*/}
     </AuroraBackground>
-    //   <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-    //     <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-    //       <Image
-    //         className="dark:invert"
-    //         src="/next.svg"
-    //         alt="Next.js logo"
-    //         width={180}
-    //         height={38}
-    //         priority
-    //       />
-    //       <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-    //         <li className="mb-2">
-    //           Get started by editing{" "}
-    //           <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-    //             src/app/page.tsx
-    //           </code>
-    //           .
-    //         </li>
-    //         <li>Save and see your changes instantly.</li>
-    //       </ol>
-    //
-    //       <div className="flex gap-4 items-center flex-col sm:flex-row">
-    //         <a
-    //           className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-    //           href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-    //           target="_blank"
-    //           rel="noopener noreferrer"
-    //         >
-    //           <Image
-    //             className="dark:invert"
-    //             src="/vercel.svg"
-    //             alt="Vercel logomark"
-    //             width={20}
-    //             height={20}
-    //           />
-    //           Deploy now
-    //         </a>
-    //         <a
-    //           className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-    //           href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-    //           target="_blank"
-    //           rel="noopener noreferrer"
-    //         >
-    //           Read our docs
-    //         </a>
-    //       </div>
-    //     </main>
-    //     <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-    //       <a
-    //         className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-    //         href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-    //         target="_blank"
-    //         rel="noopener noreferrer"
-    //       >
-    //         <Image
-    //           aria-hidden
-    //           src="/file.svg"
-    //           alt="File icon"
-    //           width={16}
-    //           height={16}
-    //         />
-    //         Learn
-    //       </a>
-    //       <a
-    //         className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-    //         href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-    //         target="_blank"
-    //         rel="noopener noreferrer"
-    //       >
-    //         <Image
-    //           aria-hidden
-    //           src="/window.svg"
-    //           alt="Window icon"
-    //           width={16}
-    //           height={16}
-    //         />
-    //         Examples
-    //       </a>
-    //       <a
-    //         className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-    //         href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-    //         target="_blank"
-    //         rel="noopener noreferrer"
-    //       >
-    //         <Image
-    //           aria-hidden
-    //           src="/globe.svg"
-    //           alt="Globe icon"
-    //           width={16}
-    //           height={16}
-    //         />
-    //         Go to nextjs.org →
-    //       </a>
-    //     </footer>
-    //   </div>
   );
 }
