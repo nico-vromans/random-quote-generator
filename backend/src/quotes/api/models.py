@@ -4,6 +4,7 @@ from pydantic import BaseModel, HttpUrl
 
 
 class Quote(BaseModel):
+    api_client_key: str
     author: str
     category: str
     image_search_query: Optional[str] = None
@@ -14,6 +15,7 @@ class Quote(BaseModel):
         # Optional configuration for serialization, validation, etc.
         json_schema_extra = {
             'example': {
+                'api_client_key': 'Zen quotes',
                 'author': 'Albert Einstein',
                 'category': 'Zen',
                 'image_search_query': 'code,programming,programmer',

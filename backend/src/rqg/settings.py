@@ -248,3 +248,6 @@ class Default(Configuration):
 
     # API Ninjas
     APININJAS_API_KEY = os.getenv(key='APININJAS_API_KEY')
+
+    # ZenQuotes.io
+    ZENQUOTES_API_KEY = os.getenv(key='ZENQUOTES_API_KEY')

@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from contrib.models import GUIDModelMixin, TimestampMixin
+from quotes.api.registry import API_CLIENTS
 
 
 class Author(GUIDModelMixin, TimestampMixin, models.Model):
@@ -32,6 +33,8 @@ class Category(GUIDModelMixin, TimestampMixin, models.Model):
 
 class QuoteOrigin(GUIDModelMixin, TimestampMixin, models.Model):
     url = models.URLField(null=True)
+    api_client_key = models.CharField(max_length=255, null=True,
+                                      choices=[(client, client.replace('_', ' ').title()) for client in API_CLIENTS])
 
     class Meta:
         verbose_name = _('Origin')

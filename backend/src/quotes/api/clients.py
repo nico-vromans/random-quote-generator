@@ -18,6 +18,11 @@ class BaseQuoteAPIClient(ABC):
 
     @property
     @abstractmethod
+    def api_client_key(self) -> str:
+        raise NotImplementedError('Subclasses must implement ``api_client_key``!')
+
+    @property
+    @abstractmethod
     def base_url(self) -> str:
         raise NotImplementedError('Subclasses must implement ``base_url``!')
 
@@ -32,6 +37,10 @@ class BaseQuoteAPIClient(ABC):
 
 
 class APINinjaQuoteAPIClient(BaseQuoteAPIClient):
+    @property
+    def api_client_key(self) -> str:
+        return 'api_ninja'
+
     @property
     def base_url(self) -> str:
         return 'https://api.api-ninjas.com/'
@@ -51,8 +60,8 @@ class APINinjaQuoteAPIClient(BaseQuoteAPIClient):
             category: str | None = data.get('category')
             quote_text: str | None = data.get('quote')
             quote_data: dict[str, any] = {
-                'author': author, 'category': category, 'image_search_query': category, 'origin': self.base_url,
-                'quote_text': quote_text
+                'api_client_key': self.api_client_key, 'author': author, 'category': category,
+                'image_search_query': category, 'origin': self.base_url, 'quote_text': quote_text
             }
 
             return Quote(**quote_data)
@@ -63,6 +72,10 @@ class APINinjaQuoteAPIClient(BaseQuoteAPIClient):
 
 
 class ProgrammingQuoteAPIClient(BaseQuoteAPIClient):
+    @property
+    def api_client_key(self) -> str:
+        return 'programming_quotes'
+
     @property
     def base_url(self) -> str:
         return 'https://programming-quotesapi.vercel.app/api/'
@@ -86,8 +99,8 @@ class ProgrammingQuoteAPIClient(BaseQuoteAPIClient):
             author: str = data.get('author')
             quote_text: str = data.get('quote')
             quote_data: dict[str, any] = {
-                'author': author, 'category': self.category, 'image_search_query': self.image_search_query,
-                'origin': self.base_url, 'quote_text': quote_text
+                'api_client_key': self.api_client_key, 'author': author, 'category': self.category,
+                'image_search_query': self.image_search_query, 'origin': self.base_url, 'quote_text': quote_text
             }
 
             return Quote(**quote_data)
@@ -99,12 +112,16 @@ class ProgrammingQuoteAPIClient(BaseQuoteAPIClient):
 
 class ZenQuoteAPIClient(BaseQuoteAPIClient):
     @property
+    def api_client_key(self) -> str:
+        return 'zen_quotes'
+
+    @property
     def base_url(self) -> str:
         return 'https://zenquotes.io/api/'
 
     @property
     def random_quote_url(self) -> str:
-        return urljoin(base=self.base_url, url='random')
+        return urljoin(base=self.base_url, url=f'random/{settings.ZENQUOTES_API_KEY}')
 
     @property
     def category(self) -> str:
@@ -121,8 +138,8 @@ class ZenQuoteAPIClient(BaseQuoteAPIClient):
             author: str = data[0].get('a')
             quote_text: str = data[0].get('q')
             quote_data: dict[str, any] = {
-                'author': author, 'category': self.category, 'image_search_query': self.image_search_query,
-                'origin': self.base_url, 'quote_text': quote_text
+                'api_client_key': self.api_client_key, 'author': author, 'category': self.category,
+                'image_search_query': self.image_search_query, 'origin': self.base_url, 'quote_text': quote_text
             }
 
             return Quote(**quote_data)

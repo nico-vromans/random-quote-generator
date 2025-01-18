@@ -1,8 +1,9 @@
 from http import HTTPMethod
 
 from distutils.util import strtobool
+from django.db.models import QuerySet
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -12,7 +13,7 @@ from rest_framework.response import Response
 from contrib.views import GenericGUIDViewSet
 from .models import Quote
 from .serializers import QuoteSerializer
-from .utils.quote_fetching import fetch_random_quote
+from .utils.quote_fetching import fetch_random_quote, fetch_random_quote_from_database
 
 
 class QuoteViewSet(GenericGUIDViewSet, ListAPIView, RetrieveAPIView, viewsets.ViewSet):
@@ -27,10 +28,14 @@ class QuoteViewSet(GenericGUIDViewSet, ListAPIView, RetrieveAPIView, viewsets.Vi
         """
         Get a random quote.
         """
-        quote: Quote = fetch_random_quote()
-        serializer = QuoteSerializer(quote)
+        quote: Quote | None = fetch_random_quote()
 
-        return Response(serializer.data)
+        if quote is None:
+            return Response(data='No quotes found', status=status.HTTP_404_NOT_FOUND)
+
+        serializer = QuoteSerializer(instance=quote)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         request=None,
@@ -75,9 +80,9 @@ class QuoteViewSet(GenericGUIDViewSet, ListAPIView, RetrieveAPIView, viewsets.Vi
 
         quote.save()
 
-        serializer = QuoteSerializer(quote)
+        serializer = QuoteSerializer(instance=quote)
 
-        return Response(serializer.data)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         request=None,
@@ -122,6 +127,57 @@ class QuoteViewSet(GenericGUIDViewSet, ListAPIView, RetrieveAPIView, viewsets.Vi
 
         quote.save()
 
-        serializer = QuoteSerializer(quote)
+        serializer = QuoteSerializer(instance=quote)
 
-        return Response(serializer.data)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=None,
+        parameters=[
+            OpenApiParameter(
+                name='category',
+                description='Category of the quote to find.',
+                required=True,
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.STR,
+            ),
+        ],
+    )
+    @action(detail=False, methods=[HTTPMethod.GET])
+    def get_random_quote_by_category(self, request: Request) -> Response:
+        """
+        Get a random quote from the database, with given category.
+        """
+        category: str = request.query_params.get('category')
+        quote: Quote = fetch_random_quote_from_database(category=category)
+
+        serializer = QuoteSerializer(instance=quote)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=None,
+        parameters=[
+            OpenApiParameter(
+                name='count',
+                description='How many quotes to return (optional, default=10).',
+                required=False,
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.INT,
+                default=10,
+            ),
+        ],
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=QuoteSerializer(many=True),
+                description='Get a list of the X most liked quotes.',
+            )
+        },
+    )
+    @action(detail=False, methods=[HTTPMethod.GET])
+    def get_most_liked_quotes(self, request: Request) -> Response:
+        quote_count: int = request.query_params.get('count', 10)
+        most_liked_quotes: QuerySet = Quote.objects.order_by('-likes')[:int(quote_count)]
+        serializer = QuoteSerializer(instance=most_liked_quotes, many=True)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)

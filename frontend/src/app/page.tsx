@@ -133,10 +133,10 @@ export default function Home() {
         <ModeToggle />
       </div>
       <div>
-        <BackgroundGradient className="rounded-lg w-150 p-3 sm:p-10 bg-white dark:bg-zinc-900">
+        <BackgroundGradient className="rounded-lg p-3 sm:p-10 bg-white dark:bg-zinc-900">
           <div
             className={cn(
-              "overflow-hidden relative card h-80 w-150 rounded-lg backgroundImage p-4",
+              "overflow-hidden relative card min-h-80 w-[500px] rounded-lg backgroundImage p-4",
               { "shadow-xl": is_image_accessible }
             )}
             style={is_image_accessible ? {
