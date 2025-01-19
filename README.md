@@ -48,8 +48,8 @@ Tech stack:
 #### Frontend:
 
 The frontend is reachable at http://localhost:3000 (or http://0.0.0.0:3000).
-Here you can get quotes (by refreshing the page) and vote on them. This is the quickest/easiest way to get started (no
-other steps needed, apart from starting the docker project).
+Here you can get random quotes (by refreshing the page) and vote on them. This is the quickest/easiest way to get
+started (no other steps needed, apart from starting the docker project).
 
 #### Backend
 
