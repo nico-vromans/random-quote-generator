@@ -125,6 +125,7 @@ Tests for the API and models are included, which can be run using ``docker exec 
     - [ ] improve the general styling of the quote (mostly the like/dislike buttons/counts)
 - backend:
     - [ ] use a task scheduler (such as [celery beat]) to automatically run the ``add_missing_images`` every hour
+    - [ ] improve the like/dislike ration in the admin (currently kinda iffy)
 
 [//]: # (URLs)
 

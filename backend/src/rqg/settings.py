@@ -238,7 +238,7 @@ class Default(Configuration):
     @property
     def SPECTACULAR_SETTINGS(self) -> dict[str, any]:  # noqa
         return {
-            'TITLE': 'Random quote generator API',
+            'TITLE': 'Votaquote API',
             'DESCRIPTION': 'API to get quotes',
             'VERSION': '1.0.0',
             'SERVE_INCLUDE_SCHEMA': False,
