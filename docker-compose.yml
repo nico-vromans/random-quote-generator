@@ -1,11 +1,9 @@
 services:
   backend:
     container_name: rqg-backend
-    build:
-      context: ./backend
-      dockerfile: docker/dev.Dockerfile
+    build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
-    env_file: .env.dev
+    env_file: .env
     ports:
       - "8000:8000"
     volumes:
@@ -19,7 +17,7 @@ services:
     image: postgres:17.2-bookworm
     container_name: rqg-db
     shm_size: 128mb
-    env_file: .env.dev
+    env_file: .env
     ports:
       - "5432:5432"
     volumes:
@@ -27,11 +25,9 @@ services:
 
   frontend:
     container_name: rqg-frontend
-    build:
-      context: ./frontend
-      dockerfile: docker/dev.Dockerfile
+    build: ./frontend
     command: npm run dev
-    env_file: .env.dev
+    env_file: .env
     ports:
       - "3000:3000"
     volumes:

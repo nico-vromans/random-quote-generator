@@ -1,5 +1,6 @@
 import logging
 
+from django.db import IntegrityError
 from pydantic import HttpUrl
 
 from contrib.api.clients import UnsplashImageAPIClient
@@ -9,19 +10,19 @@ from ..models import Quote, Author, Category, QuoteOrigin
 logger = logging.getLogger('quotes')
 
 
-def get_or_create_quote(quote: QuoteData | None) -> Quote | None:
+def get_or_create_quote(quote_data: QuoteData | None) -> Quote | None:
     """
     Saves a quote to the database if not already present.
     """
-    if quote is None:
+    if quote_data is None:
         return
 
-    author: str = quote.author
-    category: str = quote.category
-    image_search_query: str | None = quote.image_search_query
-    origin: HttpUrl = quote.origin
-    quote_text: str = quote.quote_text
-    api_client_key: str = quote.api_client_key
+    author: str = quote_data.author
+    category: str = quote_data.category
+    image_search_query: str | None = quote_data.image_search_query
+    origin: HttpUrl = quote_data.origin
+    quote_text: str = quote_data.quote_text
+    api_client_key: str = quote_data.api_client_key
 
     try:
         author: Author
@@ -46,7 +47,10 @@ def get_or_create_quote(quote: QuoteData | None) -> Quote | None:
         )
 
         return quote
+    except IntegrityError as e:
+        # Don't log, just propagate the error
+        raise e
     except Exception as e:
         logger.exception(msg=e)
 
-        return None
+        raise e

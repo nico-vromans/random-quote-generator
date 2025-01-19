@@ -1,5 +1,5 @@
 # The builder image, used to build the virtual environment
-FROM python:3.13-slim-bookworm as builder
+FROM python:3.13-slim-bookworm AS builder
 
 # Set up environment variables for builder
 ENV PYTHONUNBUFFERED=1 \
@@ -41,7 +41,7 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --no-root
 
 
 # The runtime image, used to just run the code provided its virtual environment
-FROM python:3.13-slim-bookworm as runtime
+FROM python:3.13-slim-bookworm AS runtime
 
 ENV PYTHONUNBUFFERED=1 \
     DJANGO_LOG_DIR="/var/log/django" \
@@ -78,9 +78,6 @@ RUN set -x \
 # Important for ``pip install -e`` entries
 WORKDIR /usr
 
-# Add scripts
-COPY --chown=${APP_USER}:${APP_USER} ./scripts ${ROOT_DIR}/scripts
-
 # Add the virtual environment
 COPY --chown=${APP_USER}:${APP_USER} --from=builder "${ROOT_DIR}/.venv" ${VIRTUAL_ENV}
 
@@ -98,17 +95,3 @@ RUN mkdir -p ${ROOT_DIR}/static ${ROOT_DIR}/media \
 USER ${APP_USER}
 
 SHELL ["/bin/bash", "-c"]
-
-CMD [ \
-    "$ROOT_DIR/scripts/runserver.sh", \
-    "--bind", "0.0.0.0:8000", \
-    "--max-requests", "5000", \
-    "--max-requests-jitter", "500", \
-    "--keep-alive", "300", \
-    "--timeout", "60", \
-    "--name", "rqg-backend", \
-    "--log-level", "debug", \
-    "--preload", \
-    "--reload", \
-    "--capture-output" \
-]

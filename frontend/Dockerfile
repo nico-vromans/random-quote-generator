@@ -5,8 +5,6 @@ ENV ROOT_DIR="/usr/rqg" \
     APP_DIR="${ROOT_DIR}/app" \
     TZ="Europe/Brussels"
 
-#ENV APP_DIR="${ROOT_DIR}/app"
-
 WORKDIR ${APP_DIR}
 
 # Copy and install dependencies

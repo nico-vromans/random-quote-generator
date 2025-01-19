@@ -18,7 +18,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class QuoteOriginSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuoteOrigin
-        fields = ('url',)
+        fields = ('api_client_key', 'url')
 
 
 class QuoteSerializer(serializers.ModelSerializer):

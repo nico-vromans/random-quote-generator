@@ -30,3 +30,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 django-debug-toolbar = "^4.4.6"
+pytest = "^8.3.4"
+pytest-django = "^4.9.0"
+pytest-cov = "^6.0.0"
+factory-boy = "^3.3.1"
+types-factory-boy = "^0.4.1"
+faker = "^33.3.1"

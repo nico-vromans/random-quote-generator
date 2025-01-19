@@ -47,13 +47,13 @@ class QuoteOriginAdmin(GUIDAdminMixin, ModelAdmin):
     def has_module_permission(self, request: HttpRequest) -> bool:
         return False
 
-    list_display = ('url',)
-    list_filter = ('url', ('created', RangeDateFilter), ('modified', RangeDateFilter))
+    list_display = ('api_client_key', 'url')
+    list_filter = ('api_client_key', 'url', ('created', RangeDateFilter), ('modified', RangeDateFilter))
     readonly_fields = ('created', 'modified')
-    search_fields = ordering = ('url',)
+    search_fields = ordering = ('api_client_key', 'url')
     fieldsets = (
         (
-            _('Quote origin'), {'fields': ('url',)}
+            _('Quote origin'), {'fields': ('api_client_key', 'url')}
         ),
     )
 

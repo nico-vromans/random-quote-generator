@@ -1,11 +1,10 @@
-import time
-import random
 import logging
+import random
+import time
 
-from tqdm import tqdm
 import humanize
-
 from django.core.management.base import BaseCommand
+from tqdm import tqdm
 
 from quotes.enums import QuoteSource
 from quotes.models import Quote
@@ -21,13 +20,13 @@ class Command(BaseCommand):
         parser.add_argument(
             '--number_of_quotes',
             type=int,
-            help='Number of quotes to fetch',
+            help='Number of quotes to fetch (default: %(default)s)',
             default=50,
         )
         parser.add_argument(
             '--random_likes',
             type=bool,
-            help='Set random likes and dislikes',
+            help='Set random likes and dislikes (default: %(default)s)',
             default=True,
         )
 

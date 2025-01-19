@@ -1,14 +1,14 @@
 import logging
 import random
 
+from django.db import IntegrityError
+
 from ..api.clients import BaseQuoteAPIClient
 from ..api.models import Quote as QuoteData
 from ..api.registry import API_CLIENTS
 from ..enums import QuoteSource
 from ..models import Quote
 from ..utils.db_operations import get_or_create_quote
-
-DATABASE = 'database'
 
 logger = logging.getLogger('quotes')
 
@@ -35,27 +35,47 @@ def fetch_random_quote_from_database(category: str = None) -> Quote | None:
     return queryset.order_by('?').first()
 
 
-def fetch_random_quote_from_api_client(quote_source: QuoteSource) -> Quote | None:
+def fetch_random_quote_from_api_client(quote_source: QuoteSource = None, max_retries: int = 10) -> Quote | None:
+    if quote_source is None:
+        quote_source: QuoteSource = get_random_quote_source(excluded_sources=(QuoteSource.DATABASE,))
+
     api_client: BaseQuoteAPIClient | None = API_CLIENTS.get(quote_source.name)
 
     if api_client is None:
         return None
-    else:
+
+    attempts: int = 0
+    while attempts < max_retries:
         try:
-            quote: QuoteData | None = api_client.fetch_random_quote()
+            # Get new random quote source
+            quote_source: QuoteSource = get_random_quote_source(excluded_sources=(QuoteSource.DATABASE,))
+            api_client: BaseQuoteAPIClient | None = API_CLIENTS.get(quote_source.name)
 
-            return get_or_create_quote(quote=quote)
+            if api_client is None:
+                return None
+
+            quote_data: QuoteData | None = api_client.fetch_random_quote()
+
+            if quote_data is None:
+                attempts += 1
+                continue
+
+            return get_or_create_quote(quote_data=quote_data)
+        except IntegrityError:
+            attempts += 1
         except Exception as e:
+            attempts += 1
             logger.exception(msg=e)
-
-            return None
+        finally:
+            if attempts >= max_retries:
+                logger.exception(msg='Max retries reached. Unable to fetch random quote from API.')
+                return None
 
 
 def fetch_random_quote() -> Quote | None:
     """Fetches a random quote from a random source."""
     try:
         quote_source: QuoteSource = get_random_quote_source()
-        # quote_source: QuoteSource = QuoteSource.DATABASE
     except ValueError as e:
         logger.exception(msg=e)
         return None
@@ -66,12 +86,6 @@ def fetch_random_quote() -> Quote | None:
         if quote:
             return quote
 
-        try:
-            quote_source = get_random_quote_source(excluded_sources=(QuoteSource.DATABASE,))
-        except ValueError as e:
-            logger.exception(msg=e)
-            return None
-
-    quote: Quote | None = fetch_random_quote_from_api_client(quote_source=quote_source)
+    quote: Quote | None = fetch_random_quote_from_api_client()
 
     return quote if quote else fetch_random_quote_from_database()

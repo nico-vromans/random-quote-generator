@@ -150,6 +150,8 @@ class Default(Configuration):
 
     LANGUAGE_CODE = values.Value(default='en-us', environ=False)
 
+    DEFAULT_TEST_LOCALE = values.Value(default='nl_BE', environ=False)
+
     TIME_ZONE = values.Value(default='Europe/Brussels', environ=False)
 
     USE_I18N = values.BooleanValue(True, environ=False)
@@ -228,7 +230,9 @@ class Default(Configuration):
         return {
             'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
             'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-            'PAGE_SIZE': 10
+            'PAGE_SIZE': 10,
+            'DEFAULT_AUTHENTICATION_CLASSES': (),
+            'DEFAULT_PERMISSION_CLASSES': (),
         }
 
     @property

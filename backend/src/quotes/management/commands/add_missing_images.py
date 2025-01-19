@@ -1,12 +1,11 @@
-import time
 import logging
+import time
 
+import humanize
+from django.core.management.base import BaseCommand
 from django.db.models import QuerySet
 from pydantic import HttpUrl
 from tqdm import tqdm
-import humanize
-
-from django.core.management.base import BaseCommand
 
 from contrib.api.clients import UnsplashImageAPIClient
 from quotes.api.clients import BaseQuoteAPIClient
@@ -23,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--number_of_quotes',
             type=int,
-            help='Number of quotes to update',
+            help='Number of quotes to update (default: %(default)s)',
             default=50,
         )
 

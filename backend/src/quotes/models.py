@@ -39,7 +39,7 @@ class QuoteOrigin(GUIDModelMixin, TimestampMixin, models.Model):
     class Meta:
         verbose_name = _('Origin')
         verbose_name_plural = _('Origins')
-        ordering = ('url',)
+        ordering = ('api_client_key', 'url')
 
     def __str__(self) -> str:
         return self.url
