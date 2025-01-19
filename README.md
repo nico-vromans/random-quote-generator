@@ -1,3 +1,11 @@
+![Static Badge](https://img.shields.io/badge/Docker-27.5.0-blue?logo=docker)
+![Static Badge](https://img.shields.io/badge/Python-3.13.1-blue?logo=python)
+![Static Badge](https://img.shields.io/badge/Pytest-8.3.4-blue?logo=pytest)
+![Static Badge](https://img.shields.io/badge/Django-5.1.5-blue?logo=django)
+![Static Badge](https://img.shields.io/badge/PostgreSQL-17.2-blue?logo=postgresql)
+![Static Badge](https://img.shields.io/badge/NextJS-15.1.4-blue?logo=nextdotjs)
+![Static Badge](https://img.shields.io/badge/Tailwind%20CCC-3.4.17-blue?logo=tailwindcss)
+
 # Random quote generator
 
 This is a simple app that fetches a random quote from one of a few APIs. The user can vote on the quotes by
