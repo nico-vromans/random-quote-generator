@@ -142,9 +142,6 @@ export default function Home() {
     };
   }, []);
 
-  // if (loading) return <p>Loading...</p>;
-
-  // if (!quoteData) return <p>No quote data.</p>;
   const {
     guid,
     author,
