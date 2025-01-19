@@ -58,6 +58,12 @@ Here you can manually edit quotes (and related data).
 
 ## Features
 
+### django-configuration
+
+Instead of using Django's default [setting.py](backend/src/rqg/settings.py) for configuration, this project uses
+[django-configurations], which makes setting up a Django project more dynamic. You could add multiple configurations,
+one for each environment/server/..., you can even create a base configuration that is shared with other configurations.
+
 ### Admin
 
 Since this is a Django project, the admin is located at http://localhost:8000/admin (you need a superuser account
@@ -100,6 +106,8 @@ Tests for the API and models are included, which can be run using ``docker exec 
 
 - general:
     - [ ] provide separate environments for development and production (currently only a dev environment is provided)
+        
+        this would unlock the full potential of [django-configurations]
     - [ ] add some sort of secrets manager (e.g. [HashiCorp Vault]) to mitigate secret credential exposure risks (
       currently in .env)
     - [ ] add (more) tests
@@ -122,6 +130,8 @@ Tests for the API and models are included, which can be run using ``docker exec 
 [celery beat]: https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html
 
 [Django]: https://www.djangoproject.com/
+
+[django-configurations]: https://django-configurations.readthedocs.io/en/latest/
 
 [Django REST Framework]: https://www.django-rest-framework.org/
 
