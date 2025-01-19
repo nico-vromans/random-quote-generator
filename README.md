@@ -3,7 +3,9 @@
 ![Static Badge](https://img.shields.io/badge/Pytest-8.3.4-blue?logo=pytest)
 ![Static Badge](https://img.shields.io/badge/Django-5.1.5-blue?logo=django)
 ![Static Badge](https://img.shields.io/badge/PostgreSQL-17.2-blue?logo=postgresql)
+![Static Badge](https://img.shields.io/badge/NodeJS-23.6.0-blue?logo=nodedotjs)
 ![Static Badge](https://img.shields.io/badge/NextJS-15.1.4-blue?logo=nextdotjs)
+![Static Badge](https://img.shields.io/badge/React-19.0.0-blue?logo=react)
 ![Static Badge](https://img.shields.io/badge/Tailwind%20CCC-3.4.17-blue?logo=tailwindcss)
 
 # Random quote generator
@@ -40,6 +42,8 @@ Tech stack:
   (optional): run with ``-d`` to run in the background (= detached mode), just don't forget to run
   ``docker compose down`` when you're done to stop the app.
 - create a superuser (if you want to use the admin): ``docker exec -it rqg-backend ./manage.py createsuperuser``
+- (optional): pre-populate database with fixtures (as some APIs are rate-limited):
+  `` docker exec -it rqg-backend ./manage.py loaddata quotes``
 
 #### Frontend:
 
