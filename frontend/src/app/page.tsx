@@ -5,8 +5,10 @@ import { AuroraBackground } from "@/components/ui/aurora-background";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { Badge } from "@/components/ui/badge"
-import { FaThumbsUp, FaRegThumbsUp, FaThumbsDown, FaRegThumbsDown } from "react-icons/fa6";
+import { FaRegThumbsDown, FaRegThumbsUp, FaThumbsDown, FaThumbsUp } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover"
 
 export default function Home() {
   const baseQuotesUrl = 'http://0.0.0.0:8000/quotes/';
@@ -48,7 +50,7 @@ export default function Home() {
 
     const data = await response.json();
     const imageResponse = await Promise.resolve(
-      fetch(data.image_url, { method: 'head' }).catch(() => null)
+      fetch(data.image_url, { method: 'HEAD' }).catch(() => null)
     );
 
     data.is_image_accessible = imageResponse?.ok || false;
@@ -78,39 +80,67 @@ export default function Home() {
 
     const data = await response.json();
     const imageResponse = await Promise.resolve(
-      fetch(data.image_url, { method: 'head' }).catch(() => null)
+      fetch(data.image_url, { method: 'HEAD' }).catch(() => null)
     );
 
     data.is_image_accessible = imageResponse?.ok || false;
     setQuoteData(data); // Save the data to state
   }
 
-  useEffect(() => {
-    // Fetching data from the Quote API
-    const fetchQuotes = async () => {
-      try {
-        // TODO: continue with this functionality
-        const response = await fetch(baseQuotesUrl + "get_random_quote/");
-        const data = await response.json();
-        const imageResponse = await Promise.resolve(
-          fetch(data.image_url, { method: 'head' }).catch(() => null)
-        );
+  // Fetch a random quote from the Quote API
+  const fetchRandomQuote = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(baseQuotesUrl + "get_random_quote/", { method: "GET" });
+      const data = await response.json();
+      const imageResponse = await Promise.resolve(
+        fetch(data.image_url, { method: 'HEAD' }).catch(() => null)
+      );
 
-        data.is_image_accessible = imageResponse?.ok || false;
-        setQuoteData(data); // Save the data to state
-      } catch (error) {
-        console.error("Error fetching quote data:", error);
-      } finally {
-        setLoading(false);
+      data.is_image_accessible = imageResponse?.ok || false;
+      setQuoteData(data); // Save the data to state
+    } catch (error) {
+      console.error("Error fetching quote data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch a random quote with a specific category from the Quote API
+  const fetchQuoteByCategory = async (category: string) => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams({ category: category })
+      const response: Response = await fetch(baseQuotesUrl + "get_random_quote_by_category/?" + queryParams.toString(), { method: "GET" });
+      const data = await response.json();
+      const imageResponse: Response | null = await Promise.resolve(
+        fetch(data.image_url, { method: 'HEAD' }).catch(() => null)
+      );
+
+      data.is_image_accessible = imageResponse?.ok || false;
+      setQuoteData(data); // Save the data to state
+    } catch (error) {
+      console.error("Error fetching quote data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRandomQuote();
+
+    const handleKeyDown = (event: any) => {
+      if (event.key.toLowerCase() === ' ') {
+        fetchRandomQuote(); // Fetch new quote on key press
       }
     };
 
-    fetchQuotes();
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
-
-  if (loading) return <p>Loading...</p>;
-
-  if (!quoteData) return <p>No quote data.</p>;
 
   const {
     guid,
@@ -120,17 +150,45 @@ export default function Home() {
     likes,
     dislikes,
     image_url,
-    image_alt_text,
     is_image_accessible
-  } = quoteData;
+  } = quoteData || {
+    'guid': '',
+    'author': 'Some Author',
+    'quote_text': 'Some very inspiring default quote text.',
+    'category': 'category',
+    'likes': 0,
+    'dislikes': 0,
+    'image_url': 'https://images.unsplash.com/photo-1503797172624-decbe212fdb5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTU3MTR8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzczMTIwODh8&ixlib=rb-4.0.3&q=80&w=1080',
+    'is_image_accessible': true,
+  };
 
   return (
     <AuroraBackground>
       <div className="absolute top-10 right-10 z-50">
         <ModeToggle />
       </div>
+      <div className="absolute top-20 right-10 z-50">
+        <Popover>
+          <PopoverTrigger asChild className="w-9 h-9">
+            <Button variant="outline" className="text-accent-foreground">?</Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto mr-10">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Press spacebar to get a new random quote.</p>
+                <p className="text-sm text-muted-foreground">
+                  Click the category to get a new random quote from the same category.
+                </p>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
       <div>
-        <BackgroundGradient className="rounded-lg p-3 sm:p-10 bg-white dark:bg-zinc-900">
+        <BackgroundGradient className={cn(
+          "rounded-lg p-3 sm:p-10 bg-white dark:bg-zinc-900",
+          { "blur-sm pointer-events-none": loading }
+        )}>
           <div
             className={cn(
               "overflow-hidden relative card min-h-80 w-[500px] rounded-lg backgroundImage p-4",
@@ -153,7 +211,7 @@ export default function Home() {
                   "text-neutral-600 dark:text-neutral-50": !is_image_accessible,
                 }
               )}>
-                &quot;{quote_text}&quot;
+                &quot;{quote_text ? quote_text : ''}&quot;
               </p>
               <p className={cn(
                 "text-sm italic z-10",
@@ -170,8 +228,8 @@ export default function Home() {
           <div className="flex justify-between mt-12">
             <button onClick={likeQuote}
                     className={cn(
-                      "px-6 py-2 bg-transparent border-2 dark:text-white text-black rounded-lg font-bold " +
-                      "transform hover:-translate-y-1 transition duration-400",
+                      "flex flex-col items-center px-6 py-2 bg-transparent border-2 dark:text-white " +
+                      "text-black rounded-lg font-bold transform hover:-translate-y-1 transition duration-400",
                       { "border-green-700 dark:border-green-700": getPreviousVote(guid) === 'like' },
                       { "border-black dark:border-white": getPreviousVote(guid) !== 'like' },
                     )}>
@@ -179,12 +237,13 @@ export default function Home() {
               <span>{likes}</span>
             </button>
             <div className="align-middle content-center">
-              <Badge>{category['name']}</Badge>
+              <Badge className="cursor-pointer"
+                     onClick={() => fetchQuoteByCategory(category['name'])}>{category['name']}</Badge>
             </div>
             <button onClick={dislikeQuote}
                     className={cn(
-                      "px-6 py-2 bg-transparent border-2 dark:text-white text-black rounded-lg font-bold " +
-                      "transform hover:-translate-y-1 transition duration-400",
+                      "flex flex-col items-center px-6 py-2 bg-transparent border-2 dark:text-white " +
+                      "text-black rounded-lg font-bold transform hover:-translate-y-1 transition duration-400",
                       { "border-red-700 dark:border-red-700": getPreviousVote(guid) === 'dislike' },
                       { "border-black dark:border-white": getPreviousVote(guid) !== 'dislike' },
                     )}>

@@ -115,12 +115,12 @@ Tests for the API and models are included, which can be run using ``docker exec 
       currently in .env)
     - [ ] add (more) tests
 - frontend:
-    - [ ] add a nice loading indicator for when you're fetching a (new) quote (for example: show a disabled, blurred
+    - [x] add a nice loading indicator for when you're fetching a (new) quote (for example: show a disabled, blurred
       quote with some default/hard-coded lorem ipsum data)
-    - [ ] add functionality to fetch new quote based on key press (for example ``R``) or scroll, or similar (currently
-      you must reload the page to get a new quote)
-        - [ ] add a tooltip/model/popover to inform the user of this behaviour
-    - [ ] add functionality to get quote by category (currently only available in REST API)
+    - [x] add functionality to fetch new quote based on key press (for example spacebar) or scroll, or similar 
+      (currently you must reload the page to get a new quote)
+        - [x] add a tooltip/model/popover to inform the user of this behaviour
+    - [x] add functionality to get quote by category (currently only available in REST API)
     - [ ] add functionality to get most liked quotes (currently only available in REST API)
     - [ ] improve the general styling of the quote (mostly the like/dislike buttons/counts)
 - backend:
