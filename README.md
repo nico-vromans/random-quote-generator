@@ -58,7 +58,7 @@ Here you can manually edit quotes (and related data).
 
 ## Features
 
-### django-configuration
+### django-configurations
 
 Instead of using Django's default [setting.py](backend/src/rqg/settings.py) for configuration, this project uses
 [django-configurations], which makes setting up a Django project more dynamic. You could add multiple configurations,
