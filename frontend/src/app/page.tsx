@@ -168,7 +168,7 @@ export default function Home() {
         <ModeToggle />
       </div>
       <div className="absolute top-20 right-10 z-50">
-        <Popover>
+        <Popover defaultOpen={true}>
           <PopoverTrigger asChild className="w-9 h-9">
             <Button variant="outline" className="text-accent-foreground">?</Button>
           </PopoverTrigger>
