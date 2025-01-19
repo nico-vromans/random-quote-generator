@@ -45,6 +45,9 @@ Tech stack:
 - (optional): pre-populate database with fixtures (as some APIs are rate-limited):
   `` docker exec -it rqg-backend ./manage.py loaddata quotes``
 
+  **NOTE**: there are 38 quotes with missing images, check out the [Custom commands](#custom-commands) section 
+  (``add_missing_images``) on how to add them
+
 #### Frontend:
 
 The frontend is reachable at http://localhost:3000 (or http://0.0.0.0:3000).
@@ -106,8 +109,8 @@ Tests for the API and models are included, which can be run using ``docker exec 
 
 - general:
     - [ ] provide separate environments for development and production (currently only a dev environment is provided)
-        
-        this would unlock the full potential of [django-configurations]
+
+      this would unlock the full potential of [django-configurations]
     - [ ] add some sort of secrets manager (e.g. [HashiCorp Vault]) to mitigate secret credential exposure risks (
       currently in .env)
     - [ ] add (more) tests
