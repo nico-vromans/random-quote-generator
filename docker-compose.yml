@@ -32,8 +32,10 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+      - rqg-frontend-node-modules:/app/node_modules
     depends_on:
       - backend
 
 volumes:
   db_data:
+  rqg-frontend-node-modules:
