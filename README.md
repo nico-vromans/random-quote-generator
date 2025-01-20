@@ -41,6 +41,7 @@ Tech stack:
 
   (optional): run with ``-d`` to run in the background (= detached mode), just don't forget to run
   ``docker compose down`` when you're done to stop the app.
+- don't forget to run migrations: ``docker exec -it rqg-backend ./manage.py migrate ``
 - create a superuser (if you want to use the admin): ``docker exec -it rqg-backend ./manage.py createsuperuser``
 - (optional): pre-populate database with fixtures (as some APIs are rate-limited):
   `` docker exec -it rqg-backend ./manage.py loaddata quotes``
